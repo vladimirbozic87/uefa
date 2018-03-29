@@ -24,6 +24,10 @@ class Player extends Model
         'remember_token',
     ];
 
+    /**
+     * Relation with position
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function position()
     {
         return $this->BelongsTo('App\Position', 'position_id');

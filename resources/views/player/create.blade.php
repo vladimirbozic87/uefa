@@ -24,14 +24,20 @@
                         @foreach ($players as $player)
 
                             @if ($player->injured == 1)
-                                @php $color = 'red'; @endphp
+                                @php
+                                    $color   = 'red';
+                                    $injured = '(injured)';
+                                @endphp
                             @else
-                                @php $color = 'black'; @endphp
+                                @php
+                                    $color = 'black';
+                                    $injured = '';
+                                @endphp
                             @endif
 
                             <tr>
                                 <td style="color: {{ $color }};">
-                                  {{ $player->name }}
+                                  {{ $player->name }} {{ $injured }}
                                 </td>
                                 <td>
                                   {{ $player->position->position_name }}
@@ -78,7 +84,7 @@
 
                             <div class="form-group{{ $errors->has('player_position') ? ' has-error' : '' }}">
                                 <label for="player_position" class="control-label">Player Position</label>
-                                <select class="form-control" name="player_position">
+                                <select class="form-control" name="player_position" id="player_position">
                                     <option value="">--</option>
                                     @foreach($player_positions as $player_position)
 

@@ -3,8 +3,6 @@
 @section('content')
 
     <div class="row">
-
-
             <div class="panel panel-primary">
                 <div class="panel-body">
 
@@ -18,7 +16,7 @@
                         <th style="color: white; background-color: #005cbf" align="center">My Team</th>
                         <th style="color: white; background-color: #005cbf" align="center">Other Team</th>
                         <th style="color: white; background-color: #005cbf" align="center">Play Game</th>
-                        <th style="color: white; background-color: #005cbf" align="center">Winner</th>
+                        <th style="color: white; background-color: #005cbf" align="center">Score</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -56,7 +54,7 @@
                             @endphp
                         @endif
 
-                        @if (count($game->formation) != 8)
+                        @if (count($game->teamOne->activePlayers) == 0 || count($game->teamTwo->activePlayers) == 0)
                             @php $play2 = 'disabled'; @endphp
                         @endif
 
@@ -66,7 +64,7 @@
                                     @if ($color1 == 'red')
                                         <p style="color: red">Formation</p>
                                     @else
-                                        <a readonly href="{{ route('get-formation', [$game->teamOne->name, $game->id]) }}">Formation</a>
+                                        <a readonly href="{{ route('get-formation', [$game->teamOne->name]) }}">Formation</a>
                                     @endif
                                 @endif
                                 <a href="{{ route('get-create-players', [$game->teamOne->name]) }}"><h4 style="color: {{ $color1 }}">{{ $game->teamOne->name }}</h4></a>
@@ -76,7 +74,7 @@
                                     @if ($color2 == 'red')
                                         <p style="color: red">Formation</p>
                                     @else
-                                        <a href="{{ route('get-formation', [$game->teamTwo->name, $game->id]) }}">Formation</a>
+                                        <a href="{{ route('get-formation', [$game->teamTwo->name]) }}">Formation</a>
                                     @endif
                                 @endif
                                 <a href="{{ route('get-create-players', [$game->teamTwo->name]) }}"><h4 style="color: {{ $color2 }}">{{ $game->teamTwo->name }}</h4></a>
@@ -92,19 +90,10 @@
                                 @endif
                             </td>
                             <td>
-                                @if ($game->team_winner_id == 0)
+                                @if ($game->score == '')
                                     <h4 style="color:darkgray">--</h4>
                                 @else
-                                    @if ($game->score == '0 -- 0' ||
-                                         $game->score == '1 -- 1' ||
-                                         $game->score == '2 -- 2' ||
-                                         $game->score == '3 -- 3')
-                                        @php $winner = ''; @endphp
-                                    @else
-                                        @php $winner = $game->teamWinner->name; @endphp
-                                    @endif
-
-                                    <h4 style="color: firebrick">{{ $winner }} ({{ $game->score }})</h4>
+                                    <h4 style="color: firebrick">{{ $game->score }}</h4>
                                 @endif
                             </td>
                         </tr>

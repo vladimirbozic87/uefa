@@ -24,8 +24,21 @@ class Team extends Model
         'remember_token',
     ];
 
+    /**
+     * Relation with players
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function player()
     {
         return $this->hasMany('App\Player');
+    }
+
+    /**
+     * Relation with active players
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function activePlayers()
+    {
+        return $this->hasMany('App\Player')->where('active', 1);
     }
 }

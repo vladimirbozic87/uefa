@@ -12,7 +12,7 @@ class Formation extends Model
      * @var array
      */
     protected $fillable = [
-        'game_id', 'team_id', 'position_id', 'no_of_players',
+        'type',
     ];
 
     /**
@@ -23,16 +23,5 @@ class Formation extends Model
     protected $hidden = [
         'remember_token',
     ];
-
-    public function position()
-    {
-        return $this->belongsTo('App\Position', 'position_id');
-    }
-
-    public function players()
-    {
-        return $this->hasMany('App\Player', 'position_id', 'position_id')
-            ->where('active', 1);
-    }
 
 }

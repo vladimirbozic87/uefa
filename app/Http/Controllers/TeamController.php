@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\DB;
 
 class TeamController extends Controller
 {
+    /**
+     * Show form for create Team
+     * @return $this|\Illuminate\Http\RedirectResponse
+     */
     public function getCreate()
     {
         $team = Team::all();
@@ -25,6 +29,11 @@ class TeamController extends Controller
         return view('team.create')->with('team', $team);
     }
 
+    /**
+     * Create Team
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function postCreate(Request $request)
     {
         $this->validate($request, [
@@ -76,6 +85,11 @@ class TeamController extends Controller
         return redirect()->route('get-create-players', [$team->name]);
     }
 
+    /**
+     * Show all Players and show form for Player creation
+     * @param string $name
+     * @return mixed
+     */
     public function getCreatePlayers(string $name)
     {
         $team = Team::where('name', $name)->get()->first();
@@ -94,6 +108,12 @@ class TeamController extends Controller
             ->with('players', $players);
     }
 
+    /**
+     * Create Players
+     * @param Request $request
+     * @param string $name
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function postCreatePlayers(Request $request, string $name)
     {
         $this->validate($request, [
@@ -158,6 +178,10 @@ class TeamController extends Controller
             ->with('players', $players);
     }
 
+    /**
+     * Set Team to manipulated
+     * @return $this
+     */
     public function getSetTeam()
     {
         $teams = Team::all();
@@ -165,6 +189,11 @@ class TeamController extends Controller
         return view('team.active')->with('teams', $teams);
     }
 
+    /**
+     * Set Team to manipulated
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function postSetTeam(Request $request)
     {
         $this->validate($request, [

@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\DB;
 
 class GameController extends Controller
 {
+    /**
+     * Show Game
+     * @return $this|\Illuminate\Http\RedirectResponse
+     */
     public function getPlayTeam()
     {
         $games = Game::all();
@@ -22,7 +26,12 @@ class GameController extends Controller
         return view('game.show')->with('games', $games);
     }
 
-    public function getFormation(string $name, string $game_id)
+    /**
+     * Show Formation
+     * @param string $name
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function getFormation(string $name)
     {
         $team = Team::where('name', $name)->get()->first();
 
@@ -30,15 +39,33 @@ class GameController extends Controller
             abort(404);
         }
 
-        $formation = Formation::where('team_id', $team->id)->where('game_id', $game_id)->orderBy('id', 'desc')->get();
+        if (count($team->player) < 22) {
+            return redirect()->route('get-team');
+        }
+
+        $position_array = [];
+
+        foreach ($team->activePlayers as $player) {
+            $position_array[$player->position_id][] = $player;
+        }
+
+        krsort($position_array);
+
+        $formations = Formation::all();
 
         return view('game.formations')
-            ->with('formation', $formation)
-            ->with('name', $name)
-            ->with('game_id', $game_id);
+            ->with('position_array', $position_array)
+            ->with('formations', $formations)
+            ->with('name', $name);
     }
 
-    public function postFormation(Request $request, string $name, string $game_id)
+    /**
+     * Save Formation
+     * @param Request $request
+     * @param string $name
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postFormation(Request $request, string $name)
     {
         $this->validate($request, [
             'formation' => 'required',
@@ -53,39 +80,17 @@ class GameController extends Controller
         Player::where('team_id', $team->id)->where('position_id', 1)
             ->orderBy('quality', 'desc')->take(1)->update(['active' => 1]);
 
-        $data = [];
-
         if ($formation_check == 1) {
-
-            $data = [
-                ['game_id' => $game_id, 'team_id' => $team->id, 'position_id' => '1', 'no_of_players' => '1'],
-                ['game_id' => $game_id, 'team_id' => $team->id, 'position_id' => '2', 'no_of_players' => '5'],
-                ['game_id' => $game_id, 'team_id' => $team->id, 'position_id' => '3', 'no_of_players' => '4'],
-                ['game_id' => $game_id, 'team_id' => $team->id, 'position_id' => '4', 'no_of_players' => '1']
-            ];
 
             Player::where('team_id', $team->id)->where('position_id', 2)->where('injured', 0)
                 ->orderBy('quality', 'desc')->take(5)->update(['active' => 1]);
-
-            Player::where('team_id', $team->id)->where('position_id', 3)->where('injured', 0)
-                ->orderBy('quality', 'desc')->take(4)->update(['active' => 1]);
 
             Player::where('team_id', $team->id)->where('position_id', 4)->where('injured', 0)
                 ->orderBy('speed', 'desc')->take(1)->update(['active' => 1]);
 
         } elseif ($formation_check == 2) {
 
-            $data = [
-                ['game_id' => $game_id, 'team_id' => $team->id, 'position_id' => '1', 'no_of_players' => '1'],
-                ['game_id' => $game_id, 'team_id' => $team->id, 'position_id' => '2', 'no_of_players' => '4'],
-                ['game_id' => $game_id, 'team_id' => $team->id, 'position_id' => '3', 'no_of_players' => '4'],
-                ['game_id' => $game_id, 'team_id' => $team->id, 'position_id' => '4', 'no_of_players' => '2']
-            ];
-
             Player::where('team_id', $team->id)->where('position_id', 2)->where('injured', 0)
-                ->orderBy('quality', 'desc')->take(4)->update(['active' => 1]);
-
-            Player::where('team_id', $team->id)->where('position_id', 3)->where('injured', 0)
                 ->orderBy('quality', 'desc')->take(4)->update(['active' => 1]);
 
             Player::where('team_id', $team->id)->where('position_id', 4)->where('injured', 0)
@@ -93,35 +98,38 @@ class GameController extends Controller
 
         } elseif ($formation_check == 3) {
 
-            $data = [
-                ['game_id' => $game_id, 'team_id' => $team->id, 'position_id' => '1', 'no_of_players' => '1'],
-                ['game_id' => $game_id, 'team_id' => $team->id, 'position_id' => '2', 'no_of_players' => '3'],
-                ['game_id' => $game_id, 'team_id' => $team->id, 'position_id' => '3', 'no_of_players' => '4'],
-                ['game_id' => $game_id, 'team_id' => $team->id, 'position_id' => '4', 'no_of_players' => '3']
-            ];
-
             Player::where('team_id', $team->id)->where('position_id', 2)->where('injured', 0)
                 ->orderBy('quality', 'desc')->take(3)->update(['active' => 1]);
-
-            Player::where('team_id', $team->id)->where('position_id', 3)->where('injured', 0)
-                ->orderBy('quality', 'desc')->take(4)->update(['active' => 1]);
 
             Player::where('team_id', $team->id)->where('position_id', 4)->where('injured', 0)
                 ->orderBy('quality', 'desc')->take(3)->update(['active' => 1]);
         }
 
-        Formation::where('team_id', $team->id)->where('game_id', $game_id)->delete();
+        Player::where('team_id', $team->id)->where('position_id', 3)->where('injured', 0)
+            ->orderBy('quality', 'desc')->take(4)->update(['active' => 1]);
 
-        Formation::insert($data);
+        $position_array = [];
 
-        $formation = Formation::all();
+        foreach ($team->activePlayers as $player) {
+            $position_array[$player->position_id][] = $player;
+        }
+
+        krsort($position_array);
+
+        $formations = Formation::all();
 
         return redirect()
-            ->route('get-formation', [$name, $game_id])
-            ->with('formation', $formation)
+            ->route('get-formation', [$name])
+            ->with('position_array', $position_array)
+            ->with('formations', $formations)
             ->with('info', 'The formation was successfully set up');
     }
 
+    /**
+     * Game simulation
+     * @param string $game_id
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function play(string $game_id)
     {
        $game = Game::find($game_id);
@@ -171,78 +179,66 @@ class GameController extends Controller
        $average_defense_quality1 = array_sum($defense_quality1) / count($defense_quality1);
        $average_defense_speed1   = array_sum($defense_speed1) / count($defense_speed1);
 
-        $players2 = Player::where('team_id', $game->team_two_id)->where('active', 1)->get();
+       $players2 = Player::where('team_id', $game->team_two_id)->where('active', 1)->get();
 
-        $attack_quality2 = [];
-        $attack_speed2   = [];
+       $attack_quality2 = [];
+       $attack_speed2   = [];
 
-        $defense_quality2 = [];
-        $defense_speed2   = [];
+       $defense_quality2 = [];
+       $defense_speed2   = [];
 
-        $j = 1;
+       $j = 1;
 
-        foreach ($players2 as $player) {
+       foreach ($players2 as $player) {
 
-            if ($player->position_id == 1 || $player->position_id == 2) {
+           if ($player->position_id == 1 || $player->position_id == 2) {
+               $defense_quality2[] = $player->quality;
+               $defense_speed2[]   = $player->speed;
+           }
 
-                $defense_quality2[] = $player->quality;
-                $defense_speed2[]   = $player->speed;
-            }
+           if ($player->position_id == 3) {
 
-            if ($player->position_id == 3) {
+               if ($j < 3) {
+                   $defense_quality2[] = $player->quality;
+                   $defense_speed2[]   = $player->speed;
+               } else {
+                   $attack_quality2[] = $player->quality;
+                   $attack_speed2[]   = $player->speed;
+               }
+               $j++;
+           }
 
-                if ($j < 3) {
-                    $defense_quality2[] = $player->quality;
-                    $defense_speed2[]   = $player->speed;
-                } else {
-                    $attack_quality2[] = $player->quality;
-                    $attack_speed2[]   = $player->speed;
-                }
-                $j++;
-            }
+           if ($player->position_id == 4) {
+               $attack_quality2[] = $player->quality;
+               $attack_speed2[]   = $player->speed;
+           }
+       }
 
-            if ($player->position_id == 4) {
-                $attack_quality2[] = $player->quality;
-                $attack_speed2[]   = $player->speed;
-            }
-        }
+       $average_attack_quality2  = array_sum($attack_quality2) / count($attack_quality2);
+       $average_attack_speed2    = array_sum($attack_speed2) / count($attack_speed2);
+       $average_defense_quality2 = array_sum($defense_quality2) / count($defense_quality2);
+       $average_defense_speed2   = array_sum($defense_speed2) / count($defense_speed2);
 
+       $added_defense_quality2 = $this->addValue(count($defense_quality2), count($attack_quality1)) + $average_defense_quality2;
+       $added_defense_speed2   = $this->addValue(count($defense_speed2), count($attack_speed1)) + $average_defense_speed2;
 
-        $average_attack_quality2  = array_sum($attack_quality2) / count($attack_quality2);
-        $average_attack_speed2    = array_sum($attack_speed2) / count($attack_speed2);
-        $average_defense_quality2 = array_sum($defense_quality2) / count($defense_quality2);
-        $average_defense_speed2   = array_sum($defense_speed2) / count($defense_speed2);
+       $attack_quality_final1 = $average_attack_quality1 - $added_defense_quality2;
+       $attack_speed_final1   = $average_attack_speed1 - $added_defense_speed2;
 
-        $added_defense_quality2 = $this->addValue(count($defense_quality2), count($attack_quality1)) + $average_defense_quality2;
-        $added_defense_speed2   = $this->addValue(count($defense_speed2), count($attack_speed1)) + $average_defense_speed2;
+       $added_defense_quality1 = $this->addValue(count($defense_quality1), count($attack_quality2)) + $average_defense_quality1;
+       $added_defense_speed1   = $this->addValue(count($defense_speed1), count($attack_speed2)) + $average_defense_speed1;
 
-        $attack_quality_final1 = $average_attack_quality1 - $added_defense_quality2;
-        $attack_speed_final1   = $average_attack_speed1 - $added_defense_speed2;
+       $attack_quality_final2 = $average_attack_quality2 - $added_defense_quality1;
+       $attack_speed_final2   = $average_attack_speed2 - $added_defense_speed1;
 
-        $added_defense_quality1 = $this->addValue(count($defense_quality1), count($attack_quality2)) + $average_defense_quality1;
-        $added_defense_speed1   = $this->addValue(count($defense_speed1), count($attack_speed2)) + $average_defense_speed1;
+       $give    = $this->addHit($attack_quality_final1, $attack_speed_final1);
+       $receive = $this->addHit($attack_quality_final2, $attack_speed_final2);
 
-        $attack_quality_final2 = $average_attack_quality2 - $added_defense_quality1;
-        $attack_speed_final2   = $average_attack_speed2 - $added_defense_speed1;
+       $score = $give . " -- " . $receive;
 
-        $give    = $this->addHit($attack_quality_final1, $attack_speed_final1);
-        $receive = $this->addHit($attack_quality_final2, $attack_speed_final2);
+       $game->score = $score;
 
-        $score = $give . " -- " . $receive;
-
-        $winner = '';
-
-        if ($give - $receive > 0) {
-            $winner = $game->team_one_id;
-        } else {
-            $winner = $game->team_two_id;
-        }
-
-        $game->score             = $score;
-        $game->team_winner_id	 = $winner;
-
-        $game->save();
-
+       $game->save();
 
        $player1 = Player::where('team_id', $game->team_one_id)
            ->where('position_id', '!=', 1)->where('active', 1)
@@ -260,6 +256,8 @@ class GameController extends Controller
 
        $player2->save();
 
+       Player::where('team_id', $game->team_one_id)->update(['active' => 0]);
+       Player::where('team_id', $game->team_two_id)->update(['active' => 0]);
 
        DB::table('games')->update(['ready_to_play' => 0]);
 
@@ -281,6 +279,7 @@ class GameController extends Controller
     }
 
     /**
+     * Adding value to quantity
      * @param string $defense
      * @param string $attack
      * @return float|int
@@ -303,6 +302,7 @@ class GameController extends Controller
     }
 
     /**
+     * Adding Hit
      * @param string $quality
      * @param string $speed
      * @return int

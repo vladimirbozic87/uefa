@@ -17,7 +17,6 @@ class CreateGamesTable extends Migration
             $table->increments('id');
             $table->integer('team_one_id');
             $table->integer('team_two_id');
-            $table->integer('team_winner_id');
             $table->string('score');
             $table->integer('ready_to_play')->default(0);
             $table->timestamps();

@@ -6,14 +6,26 @@
         <div class="panel panel-primary">
             <div class="panel-body">
 
-                <form class="form-vertical" role="form" method="post" action="{{ route('post-formation', [$name, $game_id]) }}">
+                <div class="col-lg-12" style="padding-left: 44%">
+                    <h3 style="margin-top: 0px"><a href="{{ route('get-create-players', [$name]) }}">{{ $name }}</a></h3>
+                </div>
+
+                <form class="form-vertical" role="form" method="post" action="{{ route('post-formation', [$name]) }}">
                     <div class="form-group{{ $errors->has('formation') ? ' has-error' : '' }}">
                         <label for="formation" class="control-label">Set Formation</label>
                         <select class="form-control" name="formation" id="formation">
                             <option value="">--</option>
-                            <option value="1">5-4-1</option>
-                            <option value="2">4-4-2</option>
-                            <option value="3">3-4-3</option>
+                            @foreach($formations as $formation)
+
+                                @if(Request::old('formation') == $formation->id)
+                                    @php $selected = "selected" @endphp
+                                @else
+                                    @php $selected = "" @endphp
+                                @endif
+
+                                <option value="{{ $formation->id }}" {{ $selected }}>{{ $formation->type }}</option>
+                            @endforeach
+
                         </select>
                         @if ($errors->has('formation'))
                             <span class="help-block">{{ $errors->first('formation') }}</span>
@@ -28,19 +40,19 @@
 
                 <br>
 
-                @foreach ($formation as $form)
+                @foreach ($position_array as $position)
 
                     @php $margin = ''; @endphp
 
-                    @if ($form->no_of_players == 3)
+                    @if (count($position) == 3)
                         @php $margin = '214px'; @endphp
-                    @elseif ($form->no_of_players == 4)
-                            @php $margin = '117px'; @endphp
-                    @elseif ($form->no_of_players == 1)
+                    @elseif (count($position) == 4)
+                        @php $margin = '117px'; @endphp
+                    @elseif (count($position) == 1)
                         @php $margin = '417px'; @endphp
-                    @elseif ($form->no_of_players == 2)
+                    @elseif (count($position) == 2)
                         @php $margin = '318px'; @endphp
-                    @elseif ($form->no_of_players == 5)
+                    @elseif (count($position) == 5)
                         @php $margin = '17px'; @endphp
                     @endif
 
@@ -48,22 +60,24 @@
                         <div class="container-steps">
                             <div class="row bs-wizard" style="border-bottom:0;">
 
-                                @for ($i=0; $i<$form->no_of_players; $i++)
+                                @foreach ($position as $player)
 
                                     <div class="col-xs-3 bs-wizard-step" style="width:200px">
-                                      <div class="text-center bs-wizard-stepnum">{{ $form->position->position_name }}</div>
-                                      <div class="progress"><div class="progress-bar"></div></div>
-                                      <a href="#" class="bs-wizard-dot"></a>
-                                      <div class="bs-wizard-info text-center">{{ $form->players[$i]->name }}</div>
+                                        <div class="text-center bs-wizard-stepnum">{{ $player->position->position_name }}</div>
+                                        <div class="progress"><div class="progress-bar"></div></div>
+                                        <a href="#" class="bs-wizard-dot"></a>
+                                        <div class="bs-wizard-info text-center">{{ $player->name }}</div>
+                                        <div class="bs-wizard-info text-center">
+                                            (<b style="color:green">quality:{{ $player->quality }}</b>,
+                                            <b style="color:#117a8b">speed:{{ $player->speed }}</b>)
+                                        </div>
                                     </div>
 
-                                @endfor
+                                @endforeach
 
                             </div>
                         </div>
                     </div>
-
-                    <br><br>
 
                 @endforeach
 

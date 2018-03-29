@@ -15,10 +15,7 @@ class CreateFormationsTable extends Migration
     {
         Schema::create('formations', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('game_id');
-            $table->integer('team_id');
-            $table->integer('position_id');
-            $table->integer('no_of_players');
+            $table->string('type');
             $table->timestamps();
         });
     }

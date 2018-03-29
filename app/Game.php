@@ -12,7 +12,7 @@ class Game extends Model
      * @var array
      */
     protected $fillable = [
-        'team_one_id', 'team_two_id', 'team_winner_id', 'ready_to_play', 'score',
+        'team_one_id', 'team_two_id', 'ready_to_play', 'score',
     ];
 
     /**
@@ -24,24 +24,22 @@ class Game extends Model
         'remember_token',
     ];
 
+    /**
+     * Relation with team one
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function teamOne()
     {
         return $this->belongsTo('App\Team', 'team_one_id');
     }
 
+    /**
+     * Relation with team two
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function teamTwo()
     {
         return $this->belongsTo('App\Team', 'team_two_id');
-    }
-
-    public function teamWinner()
-    {
-        return $this->belongsTo('App\Team', 'team_winner_id');
-    }
-
-    public function formation()
-    {
-        return $this->hasMany('App\Formation', 'game_id');
     }
 
 }
