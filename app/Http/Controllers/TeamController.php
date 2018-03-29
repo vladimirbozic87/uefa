@@ -72,9 +72,9 @@ class TeamController extends Controller
 
                 $game = new Game();
 
-                $game->team_one_id    = $owner->id;
-                $game->team_two_id    = $t->id;
-                $game->team_winner_id = 0;
+                $game->team_one_id = $owner->id;
+                $game->team_two_id = $t->id;
+                $game->score       = "";
 
                 $game->save();
             }
